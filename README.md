@@ -153,7 +153,7 @@ target:registerEvent("UpgradeSystemDeath")
 <event type="manachange" name="UpgradeSystemMana" script="upgrade_system_cs.lua" />
 <event type="preparedeath" name="UpgradeSystemPD" script="upgrade_system_cs.lua" />
 ```
-* Download latest version from [Release](https://github.com/Oen44/TFS-Upgrade-System/releases) page.
+* Download latest version from [Release Page](https://github.com/Oen44/TFS-Upgrade-System/releases/latest).
 * Extract and copy content of the archive into your `data`.
 
 ## Configuration
