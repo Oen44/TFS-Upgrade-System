@@ -760,7 +760,7 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
                 local cc,
                   plat,
                   gold = 0, 0, 0
-                for i = 1, corpse:getSize() do
+                for i = 0, corpse:getSize() do
                   local item = corpse:getItem(i)
                   if item then
                     if item.itemid == 2160 then
