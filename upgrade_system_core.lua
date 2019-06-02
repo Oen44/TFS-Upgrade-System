@@ -816,7 +816,7 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
       end
     end
     local iLvl = calculateItemLevel(monsterType)
-    for i = 1, corpse:getCapacity() do
+    for i = 0, corpse:getCapacity() do
       local item = corpse:getItem(i)
       if item then
         local itemType = item:getType()
