@@ -148,13 +148,13 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
     end
   elseif item.itemid == US_CONFIG[1][ITEM_MIND_CRYSTAL] then
     if not item:hasMemory() then
-      if not target:isUnique() then
+      if target:isUnidentified() then
         player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item is unidentified and can't be copied!")
         player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
       elseif not target:getBonusAttributes() then
         player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item doesn't have any attributes!")
         player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
-      elseif not target:isUnique() then
+      elseif target:isUnique() then
         player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item is Unique and can't be copied!")
         player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
       else

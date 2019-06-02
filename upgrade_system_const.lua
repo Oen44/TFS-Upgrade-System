@@ -1,4 +1,4 @@
-local UPGRADE_SYSTEM_VERSION = "2.1.1"
+local UPGRADE_SYSTEM_VERSION = "2.1.2"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 ITEM_UPGRADE_CRYSTAL = 1
