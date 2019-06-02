@@ -807,17 +807,28 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
     end
     if math.random(US_CONFIG.CRYSTAL_FOSSIL_DROP_CHANCE) == 1 then
       corpse:addItem(US_CONFIG.CRYSTAL_FOSSIL, 1)
+      local specs = Game.getSpectators(corpsePosition, false, true, 9, 9, 8, 8)
+      if #specs > 0 then
+        for i = 1, #specs do
+          local player = specs[i]
+          player:say("Crystal Fossil!", TALKTYPE_MONSTER_SAY, false, player, corpsePosition)
+        end
+      end
     end
+    local iLvl = calculateItemLevel(monsterType)
     for i = 1, corpse:getCapacity() do
       local item = corpse:getItem(i)
       if item then
         local itemType = item:getType()
         if itemType then
-          if itemType:isUpgradable() then
-            local iLvl = calculateItemLevel(monsterType)
+          if itemType:canHaveItemLevel() then
             item:setItemLevel(math.min(US_CONFIG.MAX_ITEM_LEVEL, math.random(math.max(1, iLvl - 5), iLvl)), true)
+          end
+          if itemType:isUpgradable() then
             if math.random(US_CONFIG.UNIDENTIFIED_DROP_CHANCE) == 1 then
               item:unidentify()
+            else
+              item:rollRarity()
             end
           end
         end
@@ -916,6 +927,11 @@ function onItemUpgradeLook(player, thing, position, distance, description)
           description = description .. "\nMirrored"
         end
       end
+    elseif thing:getType():canHaveItemLevel() then
+      local itemLevel = thing:getItemLevel()
+      if description:find("(%)%.?)") then
+        description = description:gsub("(%)%.?)", "%1\nItem Level: " .. itemLevel)
+      end
     end
   elseif thing:isPlayer() then
     local iLvl = 0
@@ -937,21 +953,23 @@ function Item.rollAttribute(self, player, itemType, weaponType, unidentify)
   local attrIds = {}
   local item_level = self:getItemLevel()
   if unidentify then
-    local upgrade_level = 1
-    for i = US_CONFIG.MAX_UPGRADE_LEVEL, 1, -1 do
-      if i >= US_CONFIG.UPGRADE_LEVEL_DESTROY then
-        if math.random(100) <= US_CONFIG.UPGRADE_DESTROY_CHANCE[i] then
-          upgrade_level = i
-          break
-        end
-      else
-        if math.random(100) <= US_CONFIG.UPGRADE_SUCCESS_CHANCE[i] then
-          upgrade_level = i
-          break
+    if US_CONFIG.IDENTIFY_UPGRADE_LEVEL then
+      local upgrade_level = 1
+      for i = US_CONFIG.MAX_UPGRADE_LEVEL, 1, -1 do
+        if i >= US_CONFIG.UPGRADE_LEVEL_DESTROY then
+          if math.random(100) <= US_CONFIG.UPGRADE_DESTROY_CHANCE[i] then
+            upgrade_level = i
+            break
+          end
+        else
+          if math.random(100) <= US_CONFIG.UPGRADE_SUCCESS_CHANCE[i] then
+            upgrade_level = i
+            break
+          end
         end
       end
+      self:setUpgradeLevel(upgrade_level)
     end
-    self:setUpgradeLevel(upgrade_level)
     local slots = math.random(1, self:getMaxAttributes())
     local usItemType = self:getItemType()
     for i = 1, slots do
@@ -1210,7 +1228,8 @@ function Item.identify(self, player, itemType, weaponType)
   self:rollRarity()
   if canUnique and math.random(US_CONFIG.UNIQUE_CHANCE) == 1 then
     local unique = math.random(#US_UNIQUES)
-    while US_UNIQUES[unique].minLevel > self:getItemLevel() or bit.band(usItemType, US_UNIQUES[unique].itemType) == 0 do
+    while US_UNIQUES[unique].minLevel > self:getItemLevel() or bit.band(usItemType, US_UNIQUES[unique].itemType) == 0 or
+      US_UNIQUES[unique].chance and math.random(100) >= US_UNIQUES[unique].chance do
       unique = math.random(#US_UNIQUES)
     end
     self:setUnique(unique)
@@ -1345,6 +1364,31 @@ end
 
 function ItemType.isUpgradable(self)
   if self:isStackable() or self:getTransformEquipId() > 0 then
+    return false
+  end
+  local slot = self:getSlotPosition() - SLOTP_LEFT - SLOTP_RIGHT
+
+  local weaponType = self:getWeaponType()
+  if weaponType > 0 then
+    if weaponType == WEAPON_AMMO then
+      return false
+    end
+    if
+      weaponType == WEAPON_SHIELD or weaponType == WEAPON_DISTANCE or weaponType == WEAPON_WAND or
+        isInArray({WEAPON_SWORD, WEAPON_CLUB, WEAPON_AXE}, weaponType)
+     then
+      return true
+    end
+  else
+    if slot == SLOTP_HEAD or slot == SLOTP_ARMOR or slot == SLOTP_LEGS or slot == SLOTP_FEET or slot == SLOTP_NECKLACE or slot == SLOTP_RING then
+      return true
+    end
+  end
+  return false
+end
+
+function ItemType.canHaveItemLevel(self)
+  if self:getTransformEquipId() > 0 then
     return false
   end
   local slot = self:getSlotPosition() - SLOTP_LEFT - SLOTP_RIGHT

@@ -35,6 +35,7 @@ US_CONFIG = {
   CRYSTAL_EXTRACTOR = 26391, -- Crystal Extractor item id
   CRYSTAL_FOSSIL = 26392, -- Crystal Fossil item id
   --
+  IDENTIFY_UPGRADE_LEVEL = false, -- if true, roll random upgrade level when identifing an item
   UPGRADE_SUCCESS_CHANCE = {[1] = 100, [2] = 100, [3] = 95, [4] = 80, [5] = 65, [6] = 40}, -- % chance for the upgrade at given upgrade level, -1 upgrade level on failure
   UPGRADE_LEVEL_DESTROY = 7, -- at which upgrade level should it break if failed, for example if = 7 then upgrading from +6 to +7-9 can destroy item on failure.
   UPGRADE_DESTROY_CHANCE = {[7] = 30, [8] = 15, [9] = 5}, -- chance for the item to break at given upgrade level
@@ -64,7 +65,7 @@ US_CONFIG = {
   HITCHANCE_PER_UPGRADE = 3, -- amount of bonus hit chance per upgrade level
   --
   CRYSTAL_FOSSIL_DROP_CHANCE = 8, -- 1:X chance that Crystal Fossil will drop from monster, X means that approximately every X monster will drop Crystal Fossil
-  UNIDENTIFIED_DROP_CHANCE = 1, -- 1:X chance that item in monster corpse will be unidentified, X means that approximately every X item will be unidentified
+  UNIDENTIFIED_DROP_CHANCE = 10, -- 1:X chance that item in monster corpse will be unidentified, X means that approximately every X item will be unidentified
   CRYSTAL_BREAK_CHANCE = 5, -- 1:X chance that Crystal will break when extracted from Fossil, X means that approximately every X Crystal will break
   UNIQUE_CHANCE = 15, -- 1:X chance that unidentified item will become Unique, X means that approximately every X unidentified item will become unique
   REQUIRE_LEVEL = true, -- block equipping items with higher Item Level than Player Level
@@ -117,6 +118,7 @@ US_UNIQUES = {
       30 -- Flame Strike on Attack
     },
     minLevel = 100, -- Required Item Level to become Unique
+    chance = 80, -- % chance to roll this unique
     itemType = US_ITEM_TYPES.WEAPON_MELEE + US_ITEM_TYPES.SHIELD -- Can be rolled only for items like Swords, Axes and Clubs
   },
   [2] = {
@@ -128,6 +130,7 @@ US_UNIQUES = {
       44 -- Regenerate Mana on Kill
     },
     minLevel = 70, -- Required Item Level to become Unique
+    chance = 60, -- % chance to roll this unique
     itemType = US_ITEM_TYPES.WEAPON_WAND + US_ITEM_TYPES.RING + US_ITEM_TYPES.NECKLACE -- Can be rolled only for items like Wands, Rods, Rings, Necklaces
   },
   [3] = {
@@ -139,6 +142,7 @@ US_UNIQUES = {
       34 -- Terra Strike on Attack
     },
     minLevel = 70, -- Required Item Level to become Unique
+    chance = 40, -- % chance to roll this unique
     itemType = US_ITEM_TYPES.WEAPON_WAND + US_ITEM_TYPES.RING + US_ITEM_TYPES.NECKLACE -- Can be rolled only for items like Wands, Rods, Rings, Necklaces
   }
 }
