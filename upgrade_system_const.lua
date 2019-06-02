@@ -1,4 +1,4 @@
-local UPGRADE_SYSTEM_VERSION = "2.1.3"
+local UPGRADE_SYSTEM_VERSION = "2.2.0"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 ITEM_UPGRADE_CRYSTAL = 1
@@ -7,10 +7,6 @@ ITEM_ALTER_CRYSTAL = 3
 ITEM_CLEAN_CRYSTAL = 4
 ITEM_FORTUNE_CRYSTAL = 5
 ITEM_FAITH_CRYSTAL = 6
-ITEM_MIND_CRYSTAL = 7
-ITEM_LIMITLESS_CRYSTAL = 8
-ITEM_MIRRORED_CRYSTAL = 9
-ITEM_VOID_CRYSTAL = 10
 
 COMMON = 1
 RARE = 2
@@ -24,12 +20,12 @@ US_CONFIG = {
     [ITEM_ALTER_CRYSTAL] = 26385, -- Alteration Crystal item id
     [ITEM_CLEAN_CRYSTAL] = 26386, -- Cleansing Crystal item id
     [ITEM_FORTUNE_CRYSTAL] = 26387, -- Fortune Crystal item id
-    [ITEM_FAITH_CRYSTAL] = 26388, -- Faith Crystal item id
-    [ITEM_MIND_CRYSTAL] = 26393, -- Mind Crystal item id
-    [ITEM_LIMITLESS_CRYSTAL] = 26394, -- Limitless Crystal item id
-    [ITEM_MIRRORED_CRYSTAL] = 26395, -- Mirrored Crystal item id
-    [ITEM_VOID_CRYSTAL] = 26396 -- Void Crystal item id
+    [ITEM_FAITH_CRYSTAL] = 26388 -- Faith Crystal item id
   },
+  ITEM_MIND_CRYSTAL = 26393, -- Mind Crystal item id
+  ITEM_LIMITLESS_CRYSTAL = 26394, -- Limitless Crystal item id
+  ITEM_MIRRORED_CRYSTAL = 26395, -- Mirrored Crystal item id
+  ITEM_VOID_CRYSTAL = 26396, -- Void Crystal item id
   ITEM_SCROLL_IDENTIFY = 26389, -- Scrol of Identification item id
   ITEM_UPGRADE_CATALYST = 26390, -- Upgrade Catalyst item id
   CRYSTAL_EXTRACTOR = 26391, -- Crystal Extractor item id

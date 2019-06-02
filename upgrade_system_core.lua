@@ -46,7 +46,7 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
         target:setUpgradeLevel(upgrade)
 
         item:remove(1)
-        player:sendTextMessage(MESSAGE_INFO_DESCR, "Item upgrade level increased by " .. upgrade .. "!")
+        player:sendTextMessage(MESSAGE_INFO_DESCR, "Item upgrade level increased to " .. upgrade .. "!")
         player:getPosition():sendMagicEffect(CONST_ME_GIFT_WRAPS)
         player:getPosition():sendMagicEffect(CONST_ME_FIREWORK_YELLOW)
         if target:getItemLevel() == 0 then
@@ -146,7 +146,7 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
         end
       end
     end
-  elseif item.itemid == US_CONFIG[1][ITEM_MIND_CRYSTAL] then
+  elseif item.itemid == US_CONFIG.ITEM_MIND_CRYSTAL then
     if not item:hasMemory() then
       if target:isUnidentified() then
         player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item is unidentified and can't be copied!")
@@ -188,7 +188,7 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
         item:remove(1)
       end
     end
-  elseif item.itemid == US_CONFIG[1][ITEM_LIMITLESS_CRYSTAL] then
+  elseif item.itemid == US_CONFIG.ITEM_LIMITLESS_CRYSTAL then
     if not target:isLimitless() then
       player:sendTextMessage(MESSAGE_INFO_DESCR, "Required Item Level removed from the item!")
       target:setLimitless(true)
@@ -197,7 +197,7 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
       player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, there are no Uniques available for this item!")
       player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
     end
-  elseif item.itemid == US_CONFIG[1][ITEM_MIRRORED_CRYSTAL] then
+  elseif item.itemid == US_CONFIG.ITEM_MIRRORED_CRYSTAL then
     local copy = Game.createItem(target.itemid, 1)
     copy:setRarity(target:getRarityId())
     copy:setCustomAttribute("upgrade", target:getUpgradeLevel())
@@ -238,7 +238,7 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
       player:sendTextMessage(MESSAGE_INFO_DESCR, "Item mirrored and placed in your backpack!")
       item:remove(1)
     end
-  elseif item.itemid == US_CONFIG[1][ITEM_VOID_CRYSTAL] then
+  elseif item.itemid == US_CONFIG.ITEM_VOID_CRYSTAL then
     local usItemType = target:getItemType()
     local canUnique = false
     for i = 1, #US_UNIQUES do
@@ -848,7 +848,7 @@ function us_RemoveBuff(pid, buffId, buffName)
 end
 
 function onItemUpgradeLook(player, thing, position, distance, description)
-  if thing:isItem() and thing.itemid == US_CONFIG[1][ITEM_MIND_CRYSTAL] and thing:hasMemory() then
+  if thing:isItem() and thing.itemid == US_CONFIG.ITEM_MIND_CRYSTAL and thing:hasMemory() then
     for i = 4, 1, -1 do
       local enchant = thing:getBonusAttribute(i)
       if enchant then
@@ -893,31 +893,37 @@ function onItemUpgradeLook(player, thing, position, distance, description)
           end
         end
       end
-      if description:find("of level (%d+) or higher") then
-        for match in description:gmatch("of level (%d+) or higher") do
-          if tonumber(match) < itemLevel then
-            description = description:gsub("of level (%d+) or higher", "of level " .. itemLevel .. " or higher")
+      if US_CONFIG.REQUIRE_LEVEL then
+        if thing:isLimitless() then
+          if description:find("It can only be wielded properly by") then
+            description = description:gsub("It can only be wielded properly by (.-)%.", "Removed required Item Level to wear.")
+          else
+            description = description:gsub("It weighs", "Removed required Item Level to wear.\nIt weighs")
           end
-        end
-      elseif description:find("It can only be wielded properly by") then
-        description =
-          description:gsub(
-          "It can only be wielded properly by (.+).\n",
-          "It can only be wielded properly by %1 of level " .. itemLevel .. " or higher.\n"
-        )
-      else
-        if description:find("It weighs") then
-          description =
-            description:gsub("It weighs", "It can only be wielded properly by players of level " .. itemLevel .. " or higher.\nIt weighs")
         else
-          description = description .. "\nIt can only be wielded properly by players of level " .. itemLevel .. " or higher."
-        end
-      end
-      if thing:isLimitless() then
-        if description:find("It weighs") then
-          description = description:gsub("oz.(.+)", "oz.%1\nRemoved required Item Level to wear.")
-        else
-          description = description .. "\nRemoved required Item Level to wear."
+          if description:find("of level (%d+) or higher") then
+            for match in description:gmatch("of level (%d+) or higher") do
+              if tonumber(match) < itemLevel then
+                description = description:gsub("of level (%d+) or higher", "of level " .. itemLevel .. " or higher")
+              end
+            end
+          elseif description:find("It can only be wielded properly by") then
+            description =
+              description:gsub(
+              "It can only be wielded properly by (.+).\n",
+              "It can only be wielded properly by %1 of level " .. itemLevel .. " or higher.\n"
+            )
+          else
+            if description:find("It weighs") then
+              description =
+                description:gsub(
+                "It weighs",
+                "It can only be wielded properly by players of level " .. itemLevel .. " or higher.\nIt weighs"
+              )
+            else
+              description = description .. "\nIt can only be wielded properly by players of level " .. itemLevel .. " or higher."
+            end
+          end
         end
       end
       if thing:isMirrored() then
@@ -1062,13 +1068,18 @@ function Item.setItemLevel(self, level, first)
   local oldLevel = self:getItemLevel()
   local itemType = ItemType(self.itemid)
   local finalValue = 0
+  local value = 0
   if oldLevel < level then
     value = (level - oldLevel)
   else
     value = (oldLevel - level)
   end
   if itemType:getAttack() > 0 then
-    finalValue = math.floor((value / US_CONFIG.ATTACK_PER_ITEM_LEVEL) * US_CONFIG.ATTACK_FROM_ITEM_LEVEL)
+    if value >= US_CONFIG.ATTACK_PER_ITEM_LEVEL then
+      finalValue = math.floor((value / US_CONFIG.ATTACK_PER_ITEM_LEVEL) * US_CONFIG.ATTACK_FROM_ITEM_LEVEL)
+    else
+      finalValue = 0
+    end
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_ATTACK,
@@ -1084,7 +1095,11 @@ function Item.setItemLevel(self, level, first)
     end
   end
   if itemType:getDefense() > 0 then
-    finalValue = math.floor((value / US_CONFIG.DEFENSE_PER_ITEM_LEVEL) * US_CONFIG.DEFENSE_FROM_ITEM_LEVEL)
+    if value >= US_CONFIG.DEFENSE_PER_ITEM_LEVEL then
+      finalValue = math.floor((value / US_CONFIG.DEFENSE_PER_ITEM_LEVEL) * US_CONFIG.DEFENSE_FROM_ITEM_LEVEL)
+    else
+      finalValue = 0
+    end
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_DEFENSE,
@@ -1100,7 +1115,11 @@ function Item.setItemLevel(self, level, first)
     end
   end
   if itemType:getArmor() > 0 then
-    finalValue = math.floor((value / US_CONFIG.ARMOR_PER_ITEM_LEVEL) * US_CONFIG.ARMOR_FROM_ITEM_LEVEL)
+    if value >= US_CONFIG.ARMOR_PER_ITEM_LEVEL then
+      finalValue = math.floor((value / US_CONFIG.ARMOR_PER_ITEM_LEVEL) * US_CONFIG.ARMOR_FROM_ITEM_LEVEL)
+    else
+      finalValue = 0
+    end
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_ARMOR,
@@ -1116,7 +1135,11 @@ function Item.setItemLevel(self, level, first)
     end
   end
   if itemType:getHitChance() > 0 then
-    finalValue = math.floor((value / US_CONFIG.HITCHANCE_PER_ITEM_LEVEL) * US_CONFIG.HITCHANCE_FROM_ITEM_LEVEL)
+    if value >= US_CONFIG.HITCHANCE_PER_ITEM_LEVEL then
+      finalValue = math.floor((value / US_CONFIG.HITCHANCE_PER_ITEM_LEVEL) * US_CONFIG.HITCHANCE_FROM_ITEM_LEVEL)
+    else
+      finalValue = 0
+    end
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_HITCHANCE,
@@ -1157,44 +1180,57 @@ function Item.setUpgradeLevel(self, level)
   local oldLevel = self:getUpgradeLevel()
   if itemType:getAttack() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) + level * US_CONFIG.ATTACK_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) + (level - oldLevel) * US_CONFIG.ATTACK_PER_UPGRADE)
     else
-      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) - US_CONFIG.ATTACK_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) - (oldLevel - level) * US_CONFIG.ATTACK_PER_UPGRADE)
     end
   end
   if itemType:getDefense() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + level * US_CONFIG.DEFENSE_PER_UPGRADE)
+      self:setAttribute(
+        ITEM_ATTRIBUTE_DEFENSE,
+        self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + (level - oldLevel) * US_CONFIG.DEFENSE_PER_UPGRADE
+      )
     else
-      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - US_CONFIG.DEFENSE_PER_UPGRADE)
+      self:setAttribute(
+        ITEM_ATTRIBUTE_DEFENSE,
+        self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - (oldLevel - level) * US_CONFIG.DEFENSE_PER_UPGRADE
+      )
     end
   end
   if itemType:getExtraDefense() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE, itemType:getExtraDefense() + level * US_CONFIG.EXTRADEFENSE_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE, itemType:getExtraDefense() + (level - oldLevel) * US_CONFIG.EXTRADEFENSE_PER_UPGRADE)
     else
-      self:setAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE, self:getAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE) - US_CONFIG.EXTRADEFENSE_PER_UPGRADE)
+      self:setAttribute(
+        ITEM_ATTRIBUTE_EXTRADEFENSE,
+        self:getAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE) - (oldLevel - level) * US_CONFIG.EXTRADEFENSE_PER_UPGRADE
+      )
     end
   end
   if itemType:getArmor() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) + level * US_CONFIG.ARMOR_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) + (level - oldLevel) * US_CONFIG.ARMOR_PER_UPGRADE)
     else
-      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) - US_CONFIG.ARMOR_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) - (oldLevel - level) * US_CONFIG.ARMOR_PER_UPGRADE)
     end
   end
   if itemType:getHitChance() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) + level * US_CONFIG.HITCHANCE_PER_UPGRADE)
+      self:setAttribute(
+        ITEM_ATTRIBUTE_HITCHANCE,
+        self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) + (level - oldLevel) * US_CONFIG.HITCHANCE_PER_UPGRADE
+      )
     else
-      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) - US_CONFIG.HITCHANCE_PER_UPGRADE)
+      self:setAttribute(
+        ITEM_ATTRIBUTE_HITCHANCE,
+        self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) - (oldLevel - level) * US_CONFIG.HITCHANCE_PER_UPGRADE
+      )
     end
   end
   self:setCustomAttribute("upgrade", level)
   if oldLevel < level then
-    self:setItemLevel(self:getItemLevel() + (US_CONFIG.ITEM_LEVEL_PER_UPGRADE * level - oldLevel))
-  else
-    self:setItemLevel(self:getItemLevel() - (US_CONFIG.ITEM_LEVEL_PER_UPGRADE * oldLevel - level))
+    self:setItemLevel(self:getItemLevel() + (US_CONFIG.ITEM_LEVEL_PER_UPGRADE * (level - oldLevel)))
   end
 end
 
