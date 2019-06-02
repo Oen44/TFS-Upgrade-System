@@ -1157,14 +1157,14 @@ function Item.setUpgradeLevel(self, level)
   local oldLevel = self:getUpgradeLevel()
   if itemType:getAttack() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, itemType:getAttack() + level * US_CONFIG.ATTACK_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) + level * US_CONFIG.ATTACK_PER_UPGRADE)
     else
       self:setAttribute(ITEM_ATTRIBUTE_ATTACK, self:getAttribute(ITEM_ATTRIBUTE_ATTACK) - US_CONFIG.ATTACK_PER_UPGRADE)
     end
   end
   if itemType:getDefense() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, itemType:getDefense() + level * US_CONFIG.DEFENSE_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + level * US_CONFIG.DEFENSE_PER_UPGRADE)
     else
       self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - US_CONFIG.DEFENSE_PER_UPGRADE)
     end
@@ -1178,14 +1178,14 @@ function Item.setUpgradeLevel(self, level)
   end
   if itemType:getArmor() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, itemType:getArmor() + level * US_CONFIG.ARMOR_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) + level * US_CONFIG.ARMOR_PER_UPGRADE)
     else
       self:setAttribute(ITEM_ATTRIBUTE_ARMOR, self:getAttribute(ITEM_ATTRIBUTE_ARMOR) - US_CONFIG.ARMOR_PER_UPGRADE)
     end
   end
   if itemType:getHitChance() > 0 then
     if oldLevel < level then
-      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, itemType:getHitChance() + level * US_CONFIG.HITCHANCE_PER_UPGRADE)
+      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) + level * US_CONFIG.HITCHANCE_PER_UPGRADE)
     else
       self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) - US_CONFIG.HITCHANCE_PER_UPGRADE)
     end
