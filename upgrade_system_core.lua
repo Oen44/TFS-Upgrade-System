@@ -7,6 +7,11 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
   if not target or not target:isItem() or not target:getType():isUpgradable() then
     return false
   end
+  if toPosition.y <= CONST_SLOT_AMMO then
+    player:sendTextMessage(MESSAGE_STATUS_WARNING, "You can't use that on equipped item!")
+    player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
+    return true
+  end
   if target:isMirrored() then
     player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item is already mirrored and can't be modified!")
     player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
