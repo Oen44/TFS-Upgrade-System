@@ -421,21 +421,47 @@ function us_onLogin(player)
   for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
     local item = player:getSlotItem(slot)
     if item then
-      local bonuses = item:getBonusAttributes()
-      if bonuses then
-        for key, value in pairs(bonuses) do
+      local newBonuses = item:getBonusAttributes()
+      if newBonuses then
+        for key, value in pairs(newBonuses) do
           local attr = US_ENCHANTMENTS[value[1]]
           if attr then
             if attr.combatType == US_TYPES.CONDITION then
-              if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] then
-                if US_CONDITIONS[value[1]][value[2]]:getType() ~= CONDITION_MANASHIELD then
-                  player:removeCondition(
-                    US_CONDITIONS[value[1]][value[2]]:getType(),
-                    CONDITIONID_COMBAT,
-                    US_CONDITIONS[value[1]][value[2]]:getSubId()
-                  )
+              if not US_CONDITIONS[value[1]] then
+                US_CONDITIONS[value[1]] = {}
+              end
+              if not US_CONDITIONS[value[1]][value[2]] then
+                US_CONDITIONS[value[1]][value[2]] = Condition(attr.condition)
+                if attr.condition ~= CONDITION_MANASHIELD then
+                  US_CONDITIONS[value[1]][value[2]]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
+                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, -1)
+                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.ceil(value[1] ^ 2) + value[2])
                 else
-                  player:removeCondition(US_CONDITIONS[value[1]][value[2]]:getType(), CONDITIONID_COMBAT)
+                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, 86400000)
+                end
+                US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+                player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                if attr == BONUS_TYPE_MAXHP then
+                  if player:getHealth() == maxHP then
+                    player:addHealth(player:getMaxHealth())
+                  end
+                end
+                if attr == BONUS_TYPE_MAXMP then
+                  if player:getMana() == maxMP then
+                    player:addMana(player:getMaxMana())
+                  end
+                end
+              else
+                player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                if attr.param == CONDITION_PARAM_STAT_MAXHITPOINTS then
+                  if player:getHealth() == maxHP then
+                    player:addHealth(player:getMaxHealth())
+                  end
+                end
+                if attr.param == CONDITION_PARAM_STAT_MAXMANAPOINTS then
+                  if player:getMana() == maxMP then
+                    player:addMana(player:getMaxMana())
+                  end
                 end
               end
             end
