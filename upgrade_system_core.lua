@@ -1430,7 +1430,7 @@ function Item.getMaxAttributes(self)
 end
 
 function ItemType.isUpgradable(self)
-  if self:isStackable() or self:getTransformEquipId() > 0 then
+  if self:isStackable() or self:getTransformEquipId() > 0 or self:getDecayId() > 0 or self:getDestroyId() > 0 or self:getCharges() > 0 then
     return false
   end
   local slot = self:getSlotPosition() - SLOTP_LEFT - SLOTP_RIGHT
@@ -1455,7 +1455,7 @@ function ItemType.isUpgradable(self)
 end
 
 function ItemType.canHaveItemLevel(self)
-  if self:getTransformEquipId() > 0 then
+  if self:getTransformEquipId() > 0 or self:getDecayId() > 0 or self:getDestroyId() > 0 or self:getCharges() > 0 then
     return false
   end
   local slot = self:getSlotPosition() - SLOTP_LEFT - SLOTP_RIGHT
