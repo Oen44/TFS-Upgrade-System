@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.2"
+local UPGRADE_SYSTEM_VERSION = "2.3.3"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -490,6 +490,12 @@ function us_onManaChange(creature, attacker, manaChange, origin)
     return manaChange
   end
 
+  if creature:isPlayer() and creature:getParty() and attacker:isPlayer() and attacker:getParty() then
+    if creature:getParty() == attacker:getParty() then
+      return manaChange
+    end
+  end
+
   if creature:isPlayer() then
     for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
       local item = creature:getSlotItem(slot)
@@ -519,6 +525,11 @@ end
 function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
   if not creature or not attacker then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
+  end
+  if creature:isPlayer() and creature:getParty() and attacker:isPlayer() and attacker:getParty() then
+    if creature:getParty() == attacker:getParty() then
+      return primaryDamage, primaryType, secondaryDamage, secondaryType
+    end
   end
   if primaryType == COMBAT_LIFEDRAIN or secondaryType == COMBAT_LIFEDRAIN then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
