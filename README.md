@@ -4,7 +4,7 @@
 * [Attributes](#attributes)
 * [Item Level](#item-level)
 * [Unique Items](#unique-items)
-* [Installation](#isntallation)
+* [Installation](#installation)
 * [Configuration](#configuration)
 * [Developer Notes](#developer-notes)
 
