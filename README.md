@@ -1,12 +1,12 @@
 #### Table of Contents
-* [About](#upgradesystem)
-* [New Items](#newitems)
+* [About](#upgrade-system)
+* [New Items](#new-items)
 * [Attributes](#attributes)
-* [Item Level](#itemlevel)
-* [Unique Items](#uniqueitems)
+* [Item Level](#item-level)
+* [Unique Items](#unique-items)
 * [Installation](#instalattion)
 * [Configuration](#configuration)
-* [Developer Notes](#developernotes)
+* [Developer Notes](#developer-notes)
 
 # Upgrade System
 
