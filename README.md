@@ -166,4 +166,11 @@ I have added some comments that should explain each property. There are however 
 
 `chance` - chance in % that this attribute will be rolled. If you want 100% then remove that property or just set to 100.
 
-
+## Developers
+Items from Quests, NPCs or any source other than monster loot won't have Item Level set.
+There are functions to help you overcome this issue.
+```lua
+-- Set Item Level = item_level
+-- Calculate additonal iLvl from base stats = true
+item:setItemLevel(item_level, true)
+```
