@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.1"
+local UPGRADE_SYSTEM_VERSION = "2.3.2"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -12,6 +12,11 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
   end
   if toPosition.y <= CONST_SLOT_AMMO then
     player:sendTextMessage(MESSAGE_STATUS_WARNING, "You can't use that on equipped item!")
+    player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
+    return true
+  end
+  if item.itemid ~= US_CONFIG.ITEM_SCROLL_IDENTIFY and target:isUnidentified() then
+    player:sendTextMessage(MESSAGE_STATUS_WARNING, "Sorry, this item is unidentified and can't be modified!")
     player:sendCancelMessage(RETURNVALUE_NOTPOSSIBLE)
     return true
   end
