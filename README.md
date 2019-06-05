@@ -1,3 +1,13 @@
+#### Table of Contents
+* [About](#upgradesystem)
+* [New Items](#newitems)
+* [Attributes](#attributes)
+* [Item Level](#itemlevel)
+* [Unique Items](#uniqueitems)
+* [Installation](#instalattion)
+* [Configuration](#configuration)
+* [Developer Notes](#developernotes)
+
 # Upgrade System
 
 Tibia has flat, dull, boring and not fun items system, time to change it. Expand your server with a lot of possibilities to make grinding more satisfying. No more useless items laying around and being ignored by others, now every item can be powerful. Using special crystals, items can be upgraded with new stats and powerful attributes. New property - Item Level - which determines how powerful given item is. A lot of crystals to upgrade items even further.
@@ -166,7 +176,7 @@ I have added some comments that should explain each property. There are however 
 
 `chance` - chance in % that this attribute will be rolled. If you want 100% then remove that property or just set to 100.
 
-## Developers
+## Developer Notes
 Items from Quests, NPCs or any source other than monster loot won't have Item Level set.
 There are functions to help you overcome this issue.
 ```lua
