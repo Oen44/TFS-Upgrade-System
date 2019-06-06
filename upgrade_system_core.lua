@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.4"
+local UPGRADE_SYSTEM_VERSION = "2.3.5"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -703,7 +703,7 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
 end
 
 function us_onDeath(creature, corpse, lasthitkiller, mostdamagekiller, lasthitunjustified, mostdamageunjustified)
-  if not lasthitkiller or not creature:isMonster() or not corpse or not corpse:isContainer() then
+  if not lasthitkiller or not creature:isMonster() or not corpse or corpse.itemid == 0 or not corpse:isContainer() then
     return true
   end
   if not lasthitkiller:isPlayer() and not lasthitkiller:getMaster() then
