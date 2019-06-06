@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.3"
+local UPGRADE_SYSTEM_VERSION = "2.3.4"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -284,6 +284,10 @@ function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
 end
 
 function us_onMoveItem(player, item, fromPosition, toPosition)
+  if not item:getType():isUpgradable() and not item:getType():canHaveItemLevel() then
+    return true
+  end
+  
   if item:isUnidentified() then
     if toPosition.y <= CONST_SLOT_AMMO and toPosition.y ~= CONST_SLOT_BACKPACK then
       player:sendTextMessage(MESSAGE_STATUS_SMALL, "You can't wear unidentified items.")
