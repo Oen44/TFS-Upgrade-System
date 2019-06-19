@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.5"
+local UPGRADE_SYSTEM_VERSION = "2.3.6"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -287,7 +287,7 @@ function us_onMoveItem(player, item, fromPosition, toPosition)
   if not item:getType():isUpgradable() and not item:getType():canHaveItemLevel() then
     return true
   end
-  
+
   if item:isUnidentified() then
     if toPosition.y <= CONST_SLOT_AMMO and toPosition.y ~= CONST_SLOT_BACKPACK then
       player:sendTextMessage(MESSAGE_STATUS_SMALL, "You can't wear unidentified items.")
@@ -313,19 +313,20 @@ function us_onMoveItem(player, item, fromPosition, toPosition)
           if oldItem:getType():isUpgradable() then
             local oldBonuses = oldItem:getBonusAttributes()
             if oldBonuses then
+              local itemId = oldItem:getId()
               for key, value in pairs(oldBonuses) do
                 local attr = US_ENCHANTMENTS[value[1]]
                 if attr then
                   if attr.combatType == US_TYPES.CONDITION then
-                    if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] then
-                      if US_CONDITIONS[value[1]][value[2]]:getType() ~= CONDITION_MANASHIELD then
+                    if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] and US_CONDITIONS[value[1]][value[2]][itemId] then
+                      if US_CONDITIONS[value[1]][value[2]][itemId]:getType() ~= CONDITION_MANASHIELD then
                         player:removeCondition(
-                          US_CONDITIONS[value[1]][value[2]]:getType(),
+                          US_CONDITIONS[value[1]][value[2]][itemId]:getType(),
                           CONDITIONID_COMBAT,
-                          US_CONDITIONS[value[1]][value[2]]:getSubId()
+                          US_CONDITIONS[value[1]][value[2]][itemId]:getSubId()
                         )
                       else
-                        player:removeCondition(US_CONDITIONS[value[1]][value[2]]:getType(), CONDITIONID_COMBAT)
+                        player:removeCondition(US_CONDITIONS[value[1]][value[2]][itemId]:getType(), CONDITIONID_COMBAT)
                       end
                     end
                   end
@@ -346,17 +347,24 @@ function us_onMoveItem(player, item, fromPosition, toPosition)
                   if not US_CONDITIONS[value[1]] then
                     US_CONDITIONS[value[1]] = {}
                   end
+                  local itemId = item:getId()
                   if not US_CONDITIONS[value[1]][value[2]] then
-                    US_CONDITIONS[value[1]][value[2]] = Condition(attr.condition)
+                    US_CONDITIONS[value[1]][value[2]] = {}
+                  end
+                  if not US_CONDITIONS[value[1]][value[2]][itemId] then
+                    US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
                     if attr.condition ~= CONDITION_MANASHIELD then
-                      US_CONDITIONS[value[1]][value[2]]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
-                      US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, -1)
-                      US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.ceil(value[1] ^ 2) + value[2])
+                      US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.random(value[1] * value[2]))
+                      US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(
+                        attr.param,
+                        attr.percentage == true and 100 + value[2] or value[2]
+                      )
+                      US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
                     else
-                      US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, 86400000)
+                      US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
                     end
-                    US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
-                    player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                    US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+                    player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
                     if attr == BONUS_TYPE_MAXHP then
                       if player:getHealth() == maxHP then
                         player:addHealth(player:getMaxHealth())
@@ -368,7 +376,7 @@ function us_onMoveItem(player, item, fromPosition, toPosition)
                       end
                     end
                   else
-                    player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                    player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
                     if attr.param == CONDITION_PARAM_STAT_MAXHITPOINTS then
                       if player:getHealth() == maxHP then
                         player:addHealth(player:getMaxHealth())
@@ -408,19 +416,20 @@ function onUpgradeMoved(player, item, count, fromPosition, toPosition, fromCylin
 
   local bonuses = item:getBonusAttributes()
   if bonuses then
+    local itemId = item:getId()
     for key, value in pairs(bonuses) do
       local attr = US_ENCHANTMENTS[value[1]]
       if attr then
         if attr.combatType == US_TYPES.CONDITION then
-          if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] then
-            if US_CONDITIONS[value[1]][value[2]]:getType() ~= CONDITION_MANASHIELD then
+          if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] and US_CONDITIONS[value[1]][value[2]][itemId] then
+            if US_CONDITIONS[value[1]][value[2]][itemId]:getType() ~= CONDITION_MANASHIELD then
               player:removeCondition(
-                US_CONDITIONS[value[1]][value[2]]:getType(),
+                US_CONDITIONS[value[1]][value[2]][itemId]:getType(),
                 CONDITIONID_COMBAT,
-                US_CONDITIONS[value[1]][value[2]]:getSubId()
+                US_CONDITIONS[value[1]][value[2]][itemId]:getSubId()
               )
             else
-              player:removeCondition(US_CONDITIONS[value[1]][value[2]]:getType(), CONDITIONID_COMBAT)
+              player:removeCondition(US_CONDITIONS[value[1]][value[2]][itemId]:getType(), CONDITIONID_COMBAT)
             end
           end
         end
@@ -440,6 +449,7 @@ function us_onLogin(player)
     if item then
       local newBonuses = item:getBonusAttributes()
       if newBonuses then
+        local itemId = item:getId()
         for key, value in pairs(newBonuses) do
           local attr = US_ENCHANTMENTS[value[1]]
           if attr then
@@ -448,16 +458,19 @@ function us_onLogin(player)
                 US_CONDITIONS[value[1]] = {}
               end
               if not US_CONDITIONS[value[1]][value[2]] then
-                US_CONDITIONS[value[1]][value[2]] = Condition(attr.condition)
+                US_CONDITIONS[value[1]][value[2]] = {}
+              end
+              if not US_CONDITIONS[value[1]][value[2]][itemId] then
+                US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
                 if attr.condition ~= CONDITION_MANASHIELD then
-                  US_CONDITIONS[value[1]][value[2]]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
-                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, -1)
-                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.ceil(value[1] ^ 2) + value[2])
+                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.random(value[1] * value[2]))
+                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
+                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
                 else
-                  US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_TICKS, 86400000)
+                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
                 end
-                US_CONDITIONS[value[1]][value[2]]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
-                player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+                player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
                 if attr == BONUS_TYPE_MAXHP then
                   if player:getHealth() == maxHP then
                     player:addHealth(player:getMaxHealth())
@@ -469,7 +482,7 @@ function us_onLogin(player)
                   end
                 end
               else
-                player:addCondition(US_CONDITIONS[value[1]][value[2]])
+                player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
                 if attr.param == CONDITION_PARAM_STAT_MAXHITPOINTS then
                   if player:getHealth() == maxHP then
                     player:addHealth(player:getMaxHealth())
