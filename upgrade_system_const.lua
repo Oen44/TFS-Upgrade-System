@@ -782,6 +782,7 @@ US_ENCHANTMENTS = {
   [51] = {
     name = "Double Damage",
     combatType = US_TYPES.OFFENSIVE,
+	combatDamage = COMBAT_ENERGYDAMAGE + COMBAT_EARTHDAMAGE + COMBAT_FIREDAMAGE + COMBAT_ICEDAMAGE + COMBAT_HOLYDAMAGE + COMBAT_DEATHDAMAGE + COMBAT_PHYSICALDAMAGE,
     VALUES_PER_LEVEL = 0.05,
     format = function(value)
       return value .. "%% to deal double damage"
