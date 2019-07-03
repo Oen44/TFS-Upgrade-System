@@ -58,9 +58,9 @@ US_CONFIG = {
   HITCHANCE_PER_UPGRADE = 3, -- amount of bonus hit chance per upgrade level
   --
   CRYSTAL_FOSSIL_DROP_CHANCE = 8, -- 1:X chance that Crystal Fossil will drop from monster, X means that approximately every X monster will drop Crystal Fossil
-  UNIDENTIFIED_DROP_CHANCE = 10, -- 1:X chance that item in monster corpse will be unidentified, X means that approximately every X item will be unidentified
+  UNIDENTIFIED_DROP_CHANCE = 1, -- 1:X chance that item in monster corpse will be unidentified, X means that approximately every X item will be unidentified
   CRYSTAL_BREAK_CHANCE = 5, -- 1:X chance that Crystal will break when extracted from Fossil, X means that approximately every X Crystal will break
-  UNIQUE_CHANCE = 15, -- 1:X chance that unidentified item will become Unique, X means that approximately every X unidentified item will become unique
+  UNIQUE_CHANCE = 1, -- 1:X chance that unidentified item will become Unique, X means that approximately every X unidentified item will become unique
   REQUIRE_LEVEL = true, -- block equipping items with higher Item Level than Player Level
   RARITY = {
     [COMMON] = {
@@ -122,7 +122,7 @@ US_UNIQUES = {
       32, -- Ice Strike on Attack
       44 -- Regenerate Mana on Kill
     },
-    minLevel = 70, -- Required Item Level to become Unique
+    minLevel = 40, -- Required Item Level to become Unique
     chance = 60, -- % chance to roll this unique
     itemType = US_ITEM_TYPES.WEAPON_WAND + US_ITEM_TYPES.RING + US_ITEM_TYPES.NECKLACE -- Can be rolled only for items like Wands, Rods, Rings, Necklaces
   },
@@ -659,7 +659,14 @@ US_ENCHANTMENTS = {
     execute = function(player, value, center, target)
       local damage = math.ceil(target:getMaxHealth() * (value / 100))
       exoriEffect(center, CONST_ME_FIREAREA)
-      doAreaCombatHealth(player:getId(), COMBAT_FIREDAMAGE, center, 2, damage, damage, CONST_ME_NONE, ORIGIN_CONDITION)
+      local specs = Game.getSpectators(center, false, false, 1, 1, 1, 1)
+      if #specs > 0 then
+        for i = 1, #specs do
+          if specs[i]:isMonster() then
+            doTargetCombatHealth(player:getId(), specs[i]:getId(), COMBAT_FIREDAMAGE, 1, damage, CONST_ME_NONE, ORIGIN_CONDITION)
+          end
+        end
+      end
     end,
     format = function(value)
       return "Explosion on Kill dealing " .. value .. "%% Max HP of a killed monster"
@@ -782,7 +789,8 @@ US_ENCHANTMENTS = {
   [51] = {
     name = "Double Damage",
     combatType = US_TYPES.OFFENSIVE,
-	combatDamage = COMBAT_ENERGYDAMAGE + COMBAT_EARTHDAMAGE + COMBAT_FIREDAMAGE + COMBAT_ICEDAMAGE + COMBAT_HOLYDAMAGE + COMBAT_DEATHDAMAGE + COMBAT_PHYSICALDAMAGE,
+    combatDamage = COMBAT_ENERGYDAMAGE + COMBAT_EARTHDAMAGE + COMBAT_FIREDAMAGE + COMBAT_ICEDAMAGE + COMBAT_HOLYDAMAGE + COMBAT_DEATHDAMAGE +
+      COMBAT_PHYSICALDAMAGE,
     VALUES_PER_LEVEL = 0.05,
     format = function(value)
       return value .. "%% to deal double damage"
