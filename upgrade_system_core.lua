@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.3.8"
+local UPGRADE_SYSTEM_VERSION = "2.4.0"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -872,17 +872,19 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
         end
       end
     end
-    if math.random(US_CONFIG.CRYSTAL_FOSSIL_DROP_CHANCE) == 1 then
-      corpse:addItem(US_CONFIG.CRYSTAL_FOSSIL, 1)
-      local specs = Game.getSpectators(corpsePosition, false, true, 9, 9, 8, 8)
-      if #specs > 0 then
-        for i = 1, #specs do
-          local player = specs[i]
-          player:say("Crystal Fossil!", TALKTYPE_MONSTER_SAY, false, player, corpsePosition)
+    local iLvl = calculateItemLevel(monsterType)
+    if iLvl >= US_CONFIG.CRYSTAL_FOSSIL_DROP_LEVEL then
+      if math.random(US_CONFIG.CRYSTAL_FOSSIL_DROP_CHANCE) == 1 then
+        corpse:addItem(US_CONFIG.CRYSTAL_FOSSIL, 1)
+        local specs = Game.getSpectators(corpsePosition, false, true, 9, 9, 8, 8)
+        if #specs > 0 then
+          for i = 1, #specs do
+            local player = specs[i]
+            player:say("Crystal Fossil!", TALKTYPE_MONSTER_SAY, false, player, corpsePosition)
+          end
         end
       end
     end
-    local iLvl = calculateItemLevel(monsterType)
     for i = 0, corpse:getCapacity() do
       local item = corpse:getItem(i)
       if item then

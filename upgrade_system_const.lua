@@ -58,6 +58,7 @@ US_CONFIG = {
   HITCHANCE_PER_UPGRADE = 3, -- amount of bonus hit chance per upgrade level
   --
   CRYSTAL_FOSSIL_DROP_CHANCE = 8, -- 1:X chance that Crystal Fossil will drop from monster, X means that approximately every X monster will drop Crystal Fossil
+  CRYSTAL_FOSSIL_DROP_LEVEL = 25, -- X monster level needed to drop Crystal Fossil
   UNIDENTIFIED_DROP_CHANCE = 1, -- 1:X chance that item in monster corpse will be unidentified, X means that approximately every X item will be unidentified
   CRYSTAL_BREAK_CHANCE = 5, -- 1:X chance that Crystal will break when extracted from Fossil, X means that approximately every X Crystal will break
   UNIQUE_CHANCE = 1, -- 1:X chance that unidentified item will become Unique, X means that approximately every X unidentified item will become unique
