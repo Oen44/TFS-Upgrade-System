@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.0"
+local UPGRADE_SYSTEM_VERSION = "2.4.1"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -665,6 +665,13 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
                     local lifeSteal = math.floor((damage * (value[2] / 100)))
                     if lifeSteal > 0 then
                       attacker:addHealth(lifeSteal)
+                    end
+                  end
+
+                  if attr.name == "Mana Steal" then
+                    local manaSteal = math.floor((damage * (value[2] / 100)))
+                    if manaSteal > 0 then
+                      attacker:addMana(manaSteal)
                     end
                   end
                 end
