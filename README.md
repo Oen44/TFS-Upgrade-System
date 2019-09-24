@@ -4,9 +4,7 @@
 * [Attributes](#attributes)
 * [Item Level](#item-level)
 * [Unique Items](#unique-items)
-* [Installation](#installation)
-* [Configuration](#configuration)
-* [Developer Notes](#developer-notes)
+* [Wiki](wiki)
 
 # Upgrade System
 
@@ -102,85 +100,5 @@ If player level is lower than iLvl of given items, they **can't** equip them!
 ## Unique Items
 Items with predefined attributes that can't be altered, only their values can be changed. Unidentified items can become Unique.
 
-## Installation
-* Open `data/global.lua`.
-* Add somewhere on top
-```xml
-dofile('data/upgrade_system_core.lua')
-```
-* Open `data/events/events.xml`.
-* Make sure you have enabled
-```xml
-<event class="Creature" method="onTargetCombat" enabled="1" />
-
-<event class="Player" method="onLook" enabled="1" />
-<event class="Player" method="onMoveItem" enabled="1" />
-<event class="Player" method="onItemMoved" enabled="1" />
-<event class="Player" method="onGainExperience" enabled="1" />
-```
-* Open `data/events/scripts/player.lua`.
-* Find `Player:onLook`.
-* Add after `local description = "You see " .. thing:getDescription(distance)`
-```xml
-description = onItemUpgradeLook(self, thing, position, distance, description)
-```
-* Find `Player:onMoveItem`.
-* Change `return true` from last line to
-```xml
-return us_onMoveItem(self, item, fromPosition, toPosition)
-```
-* Find `Player:onItemMoved`.
-* Add inside
-```xml
-onUpgradeMoved(self, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
-```
-* Find `Player:onGainExperience`.
-* Add at the end before `return exp`
-```xml
-exp = us_onGainExperience(self, source, exp, rawExp)
-```
-* Open `data/events/scripts/creature.lua`.
-* Find `Creature:onTargetCombat`.
-* Add somewhere (the best place is after all events, before any event that calculates damage, like DPS Counter)
-```xml
-target:registerEvent("UpgradeSystemHealth")
-target:registerEvent("UpgradeSystemDeath")
-```
-* Open `data/actions/actions.xml`.
-* This is important part, you have to specify items ID for crystals, scroll of identification and crystal extractor. I have created custom items for myself and IDs are one after another so I'm using `fromid` and `toid`. I hope you can handle it.
-```xml
-<action fromid="26383" toid="26389" script="upgrade_system_actions.lua" /> <!-- Crystals and Scroll -->
-<action fromid="26393" toid="26396" script="upgrade_system_actions.lua" /> <!-- Crystals -->
-<action itemid="26391" script="upgrade_system_tool.lua" /> <!-- Crystal Extractor -->
-```
-* Open `data/creaturescripts/creaturescripts.xml`.
-* Add
-```xml
-<event type="login" name="UpgradeSystemLogin" script="upgrade_system_cs.lua" />
-<event type="death" name="UpgradeSystemDeath" script="upgrade_system_cs.lua" />
-<event type="kill" name="UpgradeSystemKill" script="upgrade_system_cs.lua" />
-<event type="healthchange" name="UpgradeSystemHealth" script="upgrade_system_cs.lua" />
-<event type="manachange" name="UpgradeSystemMana" script="upgrade_system_cs.lua" />
-<event type="preparedeath" name="UpgradeSystemPD" script="upgrade_system_cs.lua" />
-```
-* Download latest version from [Release Page](https://github.com/Oen44/TFS-Upgrade-System/releases/latest).
-* Extract and copy content of the archive into your `data`.
-
-## Configuration
-Every configuration is inside `data/upgrade_system_const.lua`.
-I have added some comments that should explain each property. There are however few special properties for attributes.
-
-`VALUES_PER_LEVEL` - this indicates max value that can be rolled for given attribute, based on item level. For example if set to **3** then every Item Level adds +3 value, at Item Level 100, max value for this attribute can be 300 (still rolled from 1 to max value).
-
-`minLevel` - this indicates what Item Level is required for this attribute to be rolled. Use it to balance some early and late game attributes.
-
-`chance` - chance in % that this attribute will be rolled. If you want 100% then remove that property or just set to 100.
-
-## Developer Notes
-Items from Quests, NPCs or any source other than monster loot won't have Item Level set.
-There are functions to help you overcome this issue.
-```lua
--- Set Item Level = item_level
--- Calculate additonal iLvl from base stats = true
-item:setItemLevel(item_level, true)
-```
+## [Wiki](https://github.com/Oen44/TFS-Upgrade-System/wiki)
+You can find there information about Installation, Configuration and notes for developers.
