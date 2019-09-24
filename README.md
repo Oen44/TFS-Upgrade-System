@@ -4,7 +4,7 @@
 * [Attributes](#attributes)
 * [Item Level](#item-level)
 * [Unique Items](#unique-items)
-* [Wiki](wiki)
+* [Wiki](#wiki)
 
 # Upgrade System
 
