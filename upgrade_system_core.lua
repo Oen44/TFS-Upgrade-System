@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.2"
+local UPGRADE_SYSTEM_VERSION = "2.4.3"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -1544,19 +1544,6 @@ end
 function calculateItemLevel(monsterType)
   local level = 1
   local monsterValue = monsterType:getMaxHealth() + monsterType:getExperience()
-  if monsterValue / 1000 >= 100 then
-    level = math.ceil(math.log(monsterValue) * 10)
-  elseif monsterValue / 100 >= 100 then
-    level = math.ceil(math.log(monsterValue / 2) * 10)
-  elseif monsterValue / 100 >= 10 then
-    level = math.ceil(math.log(monsterValue / 4) * 8)
-  elseif monsterValue / 10 >= 100 then
-    level = math.ceil(math.log(monsterValue / 6) * 6)
-  elseif monsterValue / 10 >= 10 then
-    level = math.ceil(math.log(monsterValue / 8) * 4)
-  else
-    level = math.ceil(math.log(monsterValue / 10) * 2)
-  end
-
+  level = math.ceil(math.pow(monsterValue, 0.478))
   return math.max(1, level)
 end
