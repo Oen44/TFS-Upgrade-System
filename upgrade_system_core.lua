@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.3"
+local UPGRADE_SYSTEM_VERSION = "2.4.4"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -848,9 +848,7 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
             local attr = US_ENCHANTMENTS[value[1]]
             if attr then
               if attr.name == "Additonal Gold" then
-                local cc,
-                  plat,
-                  gold = 0, 0, 0
+                local cc, plat, gold = 0, 0, 0
                 for i = 0, corpse:getSize() do
                   local item = corpse:getItem(i)
                   if item then
@@ -896,7 +894,7 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
         end
       end
     end
-    local iLvl = calculateItemLevel(monsterType)
+    local iLvl = monsterType:calculateItemLevel()
     if iLvl >= US_CONFIG.CRYSTAL_FOSSIL_DROP_LEVEL then
       if math.random(US_CONFIG.CRYSTAL_FOSSIL_DROP_CHANCE) == 1 then
         corpse:addItem(US_CONFIG.CRYSTAL_FOSSIL, 1)
@@ -1002,17 +1000,10 @@ function onItemUpgradeLook(player, thing, position, distance, description)
             end
           elseif description:find("It can only be wielded properly by") then
             description =
-              description:gsub(
-              "It can only be wielded properly by (.+).\n",
-              "It can only be wielded properly by %1 of level " .. itemLevel .. " or higher.\n"
-            )
+              description:gsub("It can only be wielded properly by (.+).\n", "It can only be wielded properly by %1 of level " .. itemLevel .. " or higher.\n")
           else
             if description:find("It weighs") then
-              description =
-                description:gsub(
-                "It weighs",
-                "It can only be wielded properly by players of level " .. itemLevel .. " or higher.\nIt weighs"
-              )
+              description = description:gsub("It weighs", "It can only be wielded properly by players of level " .. itemLevel .. " or higher.\nIt weighs")
             else
               description = description .. "\nIt can only be wielded properly by players of level " .. itemLevel .. " or higher."
             end
@@ -1176,14 +1167,12 @@ function Item.setItemLevel(self, level, first)
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_ATTACK,
-        (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) + finalValue) or
-          (itemType:getAttack() + finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) + finalValue) or (itemType:getAttack() + finalValue)
       )
     else
       self:setAttribute(
         ITEM_ATTRIBUTE_ATTACK,
-        (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) - finalValue) or
-          (itemType:getAttack() - finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ATTACK) - finalValue) or (itemType:getAttack() - finalValue)
       )
     end
   end
@@ -1196,14 +1185,12 @@ function Item.setItemLevel(self, level, first)
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_DEFENSE,
-        (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + finalValue) or
-          (itemType:getDefense() + finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + finalValue) or (itemType:getDefense() + finalValue)
       )
     else
       self:setAttribute(
         ITEM_ATTRIBUTE_DEFENSE,
-        (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - finalValue) or
-          (itemType:getDefense() - finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - finalValue) or (itemType:getDefense() - finalValue)
       )
     end
   end
@@ -1216,14 +1203,12 @@ function Item.setItemLevel(self, level, first)
     if oldLevel < level then
       self:setAttribute(
         ITEM_ATTRIBUTE_ARMOR,
-        (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) + finalValue) or
-          (itemType:getArmor() + finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) + finalValue) or (itemType:getArmor() + finalValue)
       )
     else
       self:setAttribute(
         ITEM_ATTRIBUTE_ARMOR,
-        (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) - finalValue) or
-          (itemType:getArmor() - finalValue)
+        (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) > 0) and (self:getAttribute(ITEM_ATTRIBUTE_ARMOR) - finalValue) or (itemType:getArmor() - finalValue)
       )
     end
   end
@@ -1280,25 +1265,16 @@ function Item.setUpgradeLevel(self, level)
   end
   if itemType:getDefense() > 0 then
     if oldLevel < level then
-      self:setAttribute(
-        ITEM_ATTRIBUTE_DEFENSE,
-        self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + (level - oldLevel) * US_CONFIG.DEFENSE_PER_UPGRADE
-      )
+      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) + (level - oldLevel) * US_CONFIG.DEFENSE_PER_UPGRADE)
     else
-      self:setAttribute(
-        ITEM_ATTRIBUTE_DEFENSE,
-        self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - (oldLevel - level) * US_CONFIG.DEFENSE_PER_UPGRADE
-      )
+      self:setAttribute(ITEM_ATTRIBUTE_DEFENSE, self:getAttribute(ITEM_ATTRIBUTE_DEFENSE) - (oldLevel - level) * US_CONFIG.DEFENSE_PER_UPGRADE)
     end
   end
   if itemType:getExtraDefense() > 0 then
     if oldLevel < level then
       self:setAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE, itemType:getExtraDefense() + (level - oldLevel) * US_CONFIG.EXTRADEFENSE_PER_UPGRADE)
     else
-      self:setAttribute(
-        ITEM_ATTRIBUTE_EXTRADEFENSE,
-        self:getAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE) - (oldLevel - level) * US_CONFIG.EXTRADEFENSE_PER_UPGRADE
-      )
+      self:setAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE, self:getAttribute(ITEM_ATTRIBUTE_EXTRADEFENSE) - (oldLevel - level) * US_CONFIG.EXTRADEFENSE_PER_UPGRADE)
     end
   end
   if itemType:getArmor() > 0 then
@@ -1310,15 +1286,9 @@ function Item.setUpgradeLevel(self, level)
   end
   if itemType:getHitChance() > 0 then
     if oldLevel < level then
-      self:setAttribute(
-        ITEM_ATTRIBUTE_HITCHANCE,
-        self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) + (level - oldLevel) * US_CONFIG.HITCHANCE_PER_UPGRADE
-      )
+      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) + (level - oldLevel) * US_CONFIG.HITCHANCE_PER_UPGRADE)
     else
-      self:setAttribute(
-        ITEM_ATTRIBUTE_HITCHANCE,
-        self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) - (oldLevel - level) * US_CONFIG.HITCHANCE_PER_UPGRADE
-      )
+      self:setAttribute(ITEM_ATTRIBUTE_HITCHANCE, self:getAttribute(ITEM_ATTRIBUTE_HITCHANCE) - (oldLevel - level) * US_CONFIG.HITCHANCE_PER_UPGRADE)
     end
   end
   self:setCustomAttribute("upgrade", level)
@@ -1541,9 +1511,9 @@ function ItemType.canHaveItemLevel(self)
   return false
 end
 
-function calculateItemLevel(monsterType)
+function MonsterType.calculateItemLevel(self)
   local level = 1
-  local monsterValue = monsterType:getMaxHealth() + monsterType:getExperience()
+  local monsterValue = self:getMaxHealth() + self:getExperience()
   level = math.ceil(math.pow(monsterValue, 0.478))
   return math.max(1, level)
 end
