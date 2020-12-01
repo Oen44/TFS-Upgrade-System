@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.4"
+local UPGRADE_SYSTEM_VERSION = "2.4.5"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -295,6 +295,8 @@ function us_onEquip(cid, iuid, slot)
   end
   local item = Item(iuid)
   if player and item then
+    local maxHP = player:getMaxHealth()
+    local maxMP = player:getMaxMana()
     local newBonuses = item:getBonusAttributes()
     for key, value in pairs(newBonuses) do
       local attr = US_ENCHANTMENTS[value[1]]
@@ -310,7 +312,7 @@ function us_onEquip(cid, iuid, slot)
           if not US_CONDITIONS[value[1]][value[2]][itemId] then
             US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
             if attr.condition ~= CONDITION_MANASHIELD then
-              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.random(value[1] * value[2]))
+              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + itemId)
               US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
               US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
             else
@@ -461,6 +463,8 @@ function us_onLogin(player)
   player:registerEvent("UpgradeSystemMana")
   player:registerEvent("UpgradeSystemPD")
 
+  local maxHP = player:getMaxHealth()
+  local maxMP = player:getMaxMana()
   for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
     local item = player:getSlotItem(slot)
     if item then
@@ -480,7 +484,7 @@ function us_onLogin(player)
               if not US_CONDITIONS[value[1]][value[2]][itemId] then
                 US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
                 if attr.condition ~= CONDITION_MANASHIELD then
-                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + math.random(value[1] * value[2]))
+                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + itemId)
                   US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
                   US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
                 else
