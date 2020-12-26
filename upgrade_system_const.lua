@@ -664,7 +664,7 @@ US_ENCHANTMENTS = {
       if #specs > 0 then
         for i = 1, #specs do
           if specs[i]:isMonster() then
-            doTargetCombatHealth(player:getId(), specs[i]:getId(), COMBAT_FIREDAMAGE, 1, damage, CONST_ME_NONE, ORIGIN_CONDITION)
+            doTargetCombatHealth(player:getId(), specs[i]:getId(), COMBAT_FIREDAMAGE, 1, -damage, CONST_ME_NONE, ORIGIN_CONDITION)
           end
         end
       end
