@@ -1,11 +1,22 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.5"
+local UPGRADE_SYSTEM_VERSION = "2.4.6"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
 US_BUFFS = {}
 
+local US_SUBID = {}
+--[[
+  [cid] = {
+    subid = n+1,
+    items = {
+      [itemSlot] = {
+        attrSlot, attrSlot, attrSlot, attrSlot
+      }
+    }
+  }
+]]
 function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
   if not target or not target:isItem() or not target:getType():isUpgradable() then
     return false
@@ -298,28 +309,35 @@ function us_onEquip(cid, iuid, slot)
     local maxHP = player:getMaxHealth()
     local maxMP = player:getMaxMana()
     local newBonuses = item:getBonusAttributes()
-    for key, value in pairs(newBonuses) do
-      local attr = US_ENCHANTMENTS[value[1]]
+    if not newBonuses then
+      return
+    end
+
+    for i = 1, #newBonuses do
+      local value = newBonuses[i]
+      local bonusId = value[1]
+      local bonusValue = value[2]
+      local attr = US_ENCHANTMENTS[bonusId]
       if attr then
         if attr.combatType == US_TYPES.CONDITION then
-          if not US_CONDITIONS[value[1]] then
-            US_CONDITIONS[value[1]] = {}
+          if not US_CONDITIONS[bonusId] then
+            US_CONDITIONS[bonusId] = {}
           end
           local itemId = item:getId()
-          if not US_CONDITIONS[value[1]][value[2]] then
-            US_CONDITIONS[value[1]][value[2]] = {}
+          if not US_CONDITIONS[bonusId][bonusValue] then
+            US_CONDITIONS[bonusId][bonusValue] = {}
           end
-          if not US_CONDITIONS[value[1]][value[2]][itemId] then
-            US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
+          if not US_CONDITIONS[bonusId][bonusValue][itemId] then
+            US_CONDITIONS[bonusId][bonusValue][itemId] = Condition(attr.condition)
             if attr.condition ~= CONDITION_MANASHIELD then
-              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + itemId)
-              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
-              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
+              US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + player:getNextSubId(slot, i))
+              US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(attr.param, attr.percentage == true and 100 + bonusValue or bonusValue)
+              US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
             else
-              US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
+              US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
             end
-            US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
-            player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
+            US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+            player:addCondition(US_CONDITIONS[bonusId][bonusValue][itemId])
             if attr == BONUS_TYPE_MAXHP then
               if player:getHealth() == maxHP then
                 player:addHealth(player:getMaxHealth())
@@ -331,7 +349,7 @@ function us_onEquip(cid, iuid, slot)
               end
             end
           else
-            player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
+            player:addCondition(US_CONDITIONS[bonusId][bonusValue][itemId])
             if attr.param == CONDITION_PARAM_STAT_MAXHITPOINTS then
               if player:getHealth() == maxHP then
                 player:addHealth(player:getMaxHealth())
@@ -436,19 +454,22 @@ function onUpgradeMoved(player, item, count, fromPosition, toPosition, fromCylin
   local bonuses = item:getBonusAttributes()
   if bonuses then
     local itemId = item:getId()
-    for key, value in pairs(bonuses) do
-      local attr = US_ENCHANTMENTS[value[1]]
+    for i = 1, #bonuses do
+      local value = bonuses[i]
+      local bonusId = value[1]
+      local bonusValue = value[2]
+      local attr = US_ENCHANTMENTS[bonusId]
       if attr then
         if attr.combatType == US_TYPES.CONDITION then
-          if US_CONDITIONS[value[1]] and US_CONDITIONS[value[1]][value[2]] and US_CONDITIONS[value[1]][value[2]][itemId] then
-            if US_CONDITIONS[value[1]][value[2]][itemId]:getType() ~= CONDITION_MANASHIELD then
+          if US_CONDITIONS[bonusId] and US_CONDITIONS[bonusId][bonusValue] and US_CONDITIONS[bonusId][bonusValue][itemId] then
+            if US_CONDITIONS[bonusId][bonusValue][itemId]:getType() ~= CONDITION_MANASHIELD then
               player:removeCondition(
-                US_CONDITIONS[value[1]][value[2]][itemId]:getType(),
+                US_CONDITIONS[bonusId][bonusValue][itemId]:getType(),
                 CONDITIONID_COMBAT,
-                US_CONDITIONS[value[1]][value[2]][itemId]:getSubId()
+                US_CONDITIONS[bonusId][bonusValue][itemId]:getSubId()
               )
             else
-              player:removeCondition(US_CONDITIONS[value[1]][value[2]][itemId]:getType(), CONDITIONID_COMBAT)
+              player:removeCondition(US_CONDITIONS[bonusId][bonusValue][itemId]:getType(), CONDITIONID_COMBAT)
             end
           end
         end
@@ -471,27 +492,30 @@ function us_onLogin(player)
       local newBonuses = item:getBonusAttributes()
       if newBonuses then
         local itemId = item:getId()
-        for key, value in pairs(newBonuses) do
-          local attr = US_ENCHANTMENTS[value[1]]
+        for i = 1, #newBonuses do
+          local value = newBonuses[i]
+          local bonusId = value[1]
+          local bonusValue = value[2]
+          local attr = US_ENCHANTMENTS[bonusId]
           if attr then
             if attr.combatType == US_TYPES.CONDITION then
-              if not US_CONDITIONS[value[1]] then
-                US_CONDITIONS[value[1]] = {}
+              if not US_CONDITIONS[bonusId] then
+                US_CONDITIONS[bonusId] = {}
               end
-              if not US_CONDITIONS[value[1]][value[2]] then
-                US_CONDITIONS[value[1]][value[2]] = {}
+              if not US_CONDITIONS[bonusId][bonusValue] then
+                US_CONDITIONS[bonusId][bonusValue] = {}
               end
-              if not US_CONDITIONS[value[1]][value[2]][itemId] then
-                US_CONDITIONS[value[1]][value[2]][itemId] = Condition(attr.condition)
+              if not US_CONDITIONS[bonusId][bonusValue][itemId] then
+                US_CONDITIONS[bonusId][bonusValue][itemId] = Condition(attr.condition)
                 if attr.condition ~= CONDITION_MANASHIELD then
-                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + itemId)
-                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(attr.param, attr.percentage == true and 100 + value[2] or value[2])
-                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
+                  US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_SUBID, 1000 + player:getNextSubId(slot, i))
+                  US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(attr.param, attr.percentage == true and 100 + bonusValue or bonusValue)
+                  US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_TICKS, -1)
                 else
-                  US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
+                  US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_TICKS, 86400000)
                 end
-                US_CONDITIONS[value[1]][value[2]][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
-                player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
+                US_CONDITIONS[bonusId][bonusValue][itemId]:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+                player:addCondition(US_CONDITIONS[bonusId][bonusValue][itemId])
                 if attr == BONUS_TYPE_MAXHP then
                   if player:getHealth() == maxHP then
                     player:addHealth(player:getMaxHealth())
@@ -503,7 +527,7 @@ function us_onLogin(player)
                   end
                 end
               else
-                player:addCondition(US_CONDITIONS[value[1]][value[2]][itemId])
+                player:addCondition(US_CONDITIONS[bonusId][bonusValue][itemId])
                 if attr.param == CONDITION_PARAM_STAT_MAXHITPOINTS then
                   if player:getHealth() == maxHP then
                     player:addHealth(player:getMaxHealth())
@@ -523,80 +547,83 @@ function us_onLogin(player)
   end
 end
 
-function us_onManaChange(creature, attacker, manaChange, origin)
-  if not creature or not attacker or creature == attacker then
-    return manaChange
+function us_onManaChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
+  if not creature or not attacker then
+    return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
 
   if creature:isPlayer() and creature:getParty() and attacker:isPlayer() and attacker:getParty() then
     if creature:getParty() == attacker:getParty() then
-      return manaChange
+      return primaryDamage, primaryType, secondaryDamage, secondaryType
     end
   end
 
-  if creature:isPlayer() then
-    for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
-      local item = creature:getSlotItem(slot)
-      if item then
-        local values = item:getBonusAttributes()
-        if values then
-          for key, value in pairs(values) do
-            value[1] = value[1]
-            value[2] = value[2]
-            local attr = US_ENCHANTMENTS[value[1]]
-            if attr then
-              if attr.combatType and attr.combatType == US_TYPES.TRIGGER then
-                if attr.triggerType == US_TRIGGERS.HIT then
-                  attr.execute(creature, attacker, value[2])
-                end
-              end
-            end
-          end
-        end
-      end
-    end
+  if primaryType == COMBAT_LIFEDRAIN or secondaryType == COMBAT_LIFEDRAIN then
+    return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
 
-  return manaChange
+  if primaryType == COMBAT_MANADRAIN or secondaryType == COMBAT_MANADRAIN then
+    return primaryDamage, primaryType, secondaryDamage, secondaryType
+  end
+
+  if creature == attacker and primaryType ~= COMBAT_HEALING then
+    return primaryDamage, primaryType, secondaryDamage, secondaryType
+  end
+
+  if origin == ORIGIN_CONDITION then
+    return primaryDamage, primaryType, secondaryDamage, secondaryType
+  end
+
+  return us_onDamaged(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
 end
 
 function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
   if not creature or not attacker then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
+
   if creature:isPlayer() and creature:getParty() and attacker:isPlayer() and attacker:getParty() then
     if creature:getParty() == attacker:getParty() then
       return primaryDamage, primaryType, secondaryDamage, secondaryType
     end
   end
+
   if primaryType == COMBAT_LIFEDRAIN or secondaryType == COMBAT_LIFEDRAIN then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
-  if creature == attacker then
+
+  if creature == attacker and primaryType ~= COMBAT_HEALING then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
+
   if origin == ORIGIN_CONDITION then
     return primaryDamage, primaryType, secondaryDamage, secondaryType
   end
 
+  return us_onDamaged(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
+end
+
+function us_onDamaged(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
   if primaryType == COMBAT_HEALING or secondaryType == COMBAT_HEALING then
     if attacker:isPlayer() then
+      local primaryTotal = 0
+      local secondaryTotal = 0
       for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
         local item = attacker:getSlotItem(slot)
         if item then
-          local values = item:getBonusAttributes()
-          if values then
-            for key, value in pairs(values) do
-              value[1] = value[1]
-              value[2] = value[2]
-              local attr = US_ENCHANTMENTS[value[1]]
-              if attr then
-                if attr.name == "Increased Healing" then
-                  if primaryType == COMBAT_HEALING then
-                    primaryDamage = math.floor(primaryDamage + (primaryDamage * value[2] / 100))
-                  end
-                  if secondaryType == COMBAT_HEALING then
-                    secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * value[2] / 100))
+          if item:getType():usesSlot(slot) then
+            local values = item:getBonusAttributes()
+            if values then
+              for key, value in pairs(values) do
+                local attr = US_ENCHANTMENTS[value[1]]
+                if attr then
+                  if attr.name == "Increased Healing" then
+                    if primaryType == COMBAT_HEALING then
+                      primaryTotal = primaryTotal + value[2]
+                    end
+                    if secondaryType == COMBAT_HEALING then
+                      secondaryTotal = secondaryTotal + value[2]
+                    end
                   end
                 end
               end
@@ -604,30 +631,45 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
           end
         end
       end
+      if primaryType == COMBAT_HEALING then
+        primaryDamage = math.floor(primaryDamage + (primaryDamage * primaryTotal / 100))
+      end
+      if secondaryType == COMBAT_HEALING then
+        secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * secondaryTotal / 100))
+      end
     end
     if creature:isPlayer() then
+      local primaryTotal = 0
+      local secondaryTotal = 0
       for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
         local item = creature:getSlotItem(slot)
         if item then
-          local values = item:getBonusAttributes()
-          if values then
-            for key, value in pairs(values) do
-              value[1] = value[1]
-              value[2] = value[2]
-              local attr = US_ENCHANTMENTS[value[1]]
-              if attr then
-                if attr.name == "Increased Healing" then
-                  if primaryDamage > 0 then
-                    primaryDamage = math.floor(primaryDamage + (primaryDamage * value[2] / 100))
-                  end
-                  if secondaryDamage > 0 then
-                    secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * value[2] / 100))
+          if item:getType():usesSlot(slot) then
+            local values = item:getBonusAttributes()
+            if values then
+              for key, value in pairs(values) do
+                local attr = US_ENCHANTMENTS[value[1]]
+                if attr then
+                  if attr.name == "Increased Healing" then
+                    if primaryDamage > 0 then
+                      primaryTotal = primaryTotal + value[2]
+                    end
+                    if secondaryDamage > 0 then
+                      secondaryTotal = secondaryTotal + value[2]
+                    end
                   end
                 end
               end
             end
           end
         end
+      end
+
+      if primaryTotal > 0 then
+        primaryDamage = math.floor(primaryDamage + (primaryDamage * primaryTotal / 100))
+      end
+      if secondaryTotal > 0 then
+        secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * secondaryTotal / 100))
       end
     end
     return primaryDamage, primaryType, secondaryDamage, secondaryType
@@ -645,54 +687,45 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
         end
       end
     end
+    local doubleDamageTotal = 0
+    local primaryDamageTotal = 0
+    local secondaryDamageTotal = 0
+    local lifeStealTotal = 0
+    local manaStealTotal = 0
     for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
       local item = attacker:getSlotItem(slot)
       if item then
-        local values = item:getBonusAttributes()
-        if values then
-          for key, value in pairs(values) do
-            value[1] = value[1]
-            value[2] = value[2]
-            local attr = US_ENCHANTMENTS[value[1]]
-            if attr then
-              if attr.combatType and attr.combatType ~= US_TYPES.CONDITION then
-                if attr.combatType == US_TYPES.TRIGGER then
-                  if attr.triggerType == US_TRIGGERS.ATTACK then
-                    attr.execute(attacker, creature, value[2])
-                  end
-                elseif attr.name == "Double Damage" then
-                  if math.random(100) < value[2] then
-                    primaryDamage = primaryDamage * 2
-                    secondaryDamage = secondaryDamage * 2
-                  end
-                else
-                  if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
-                    if attr.combatType == US_TYPES.OFFENSIVE then
-                      primaryDamage = math.floor(primaryDamage + (primaryDamage * value[2] / 100))
+        if item:getType():usesSlot(slot) then
+          local values = item:getBonusAttributes()
+          if values then
+            for key, value in pairs(values) do
+              local attr = US_ENCHANTMENTS[value[1]]
+              if attr then
+                if attr.combatType and attr.combatType ~= US_TYPES.CONDITION then
+                  if attr.combatType == US_TYPES.TRIGGER then
+                    if attr.triggerType == US_TRIGGERS.ATTACK then
+                      attr.execute(attacker, creature, value[2])
                     end
-                  end
-                  if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
-                    if attr.combatType == US_TYPES.OFFENSIVE then
-                      secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * value[2] / 100))
+                  elseif attr.name == "Double Damage" then
+                    doubleDamageTotal = doubleDamageTotal + value[2]
+                  else
+                    if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
+                      if attr.combatType == US_TYPES.OFFENSIVE then
+                        primaryDamageTotal = primaryDamageTotal + value[2]
+                      end
                     end
-                  end
-
-                  local damage = (primaryDamage + secondaryDamage)
-                  if damage < 0 then
-                    damage = damage * -1
-                  end
-
-                  if attr.name == "Life Steal" then
-                    local lifeSteal = math.floor((damage * (value[2] / 100)))
-                    if lifeSteal > 0 then
-                      attacker:addHealth(lifeSteal)
+                    if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
+                      if attr.combatType == US_TYPES.OFFENSIVE then
+                        secondaryDamageTotal = secondaryDamageTotal + value[2]
+                      end
                     end
-                  end
 
-                  if attr.name == "Mana Steal" then
-                    local manaSteal = math.floor((damage * (value[2] / 100)))
-                    if manaSteal > 0 then
-                      attacker:addMana(manaSteal)
+                    if attr.name == "Life Steal" then
+                      lifeStealTotal = lifeStealTotal + value[2]
+                    end
+
+                    if attr.name == "Mana Steal" then
+                      manaStealTotal = manaStealTotal + value[2]
                     end
                   end
                 end
@@ -700,35 +733,71 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
             end
           end
         end
+      end
+    end
+
+    if doubleDamageTotal > 0 then
+      if math.random(100) < doubleDamageTotal then
+        primaryDamage = primaryDamage * 2
+        secondaryDamage = secondaryDamage * 2
+      end
+    end
+
+    if primaryDamageTotal > 0 then
+      primaryDamage = math.floor(primaryDamage + (primaryDamage * primaryDamageTotal / 100))
+    end
+
+    if secondaryDamageTotal > 0 then
+      secondaryDamage = math.floor(secondaryDamage + (secondaryDamage * secondaryDamageTotal / 100))
+    end
+
+    local damage = (primaryDamage + secondaryDamage)
+    if damage < 0 then
+      damage = damage * -1
+    end
+
+    if lifeStealTotal > 0 then
+      local lifeSteal = math.floor((damage * (lifeStealTotal / 100)))
+      if lifeSteal > 0 then
+        attacker:addHealth(lifeSteal)
+      end
+    end
+
+    if manaStealTotal > 0 then
+      local manaSteal = math.floor((damage * (manaStealTotal / 100)))
+      if manaSteal > 0 then
+        attacker:addMana(manaSteal)
       end
     end
   end
 
   if creature:isPlayer() then
+    local primaryDamageTotal = 0
+    local secondaryDamageTotal = 0
     for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
       local item = creature:getSlotItem(slot)
       if item then
-        local values = item:getBonusAttributes()
-        if values then
-          for key, value in pairs(values) do
-            value[1] = value[1]
-            value[2] = value[2]
-            local attr = US_ENCHANTMENTS[value[1]]
-            if attr then
-              if attr.combatType and attr.combatType ~= US_TYPES.CONDITION then
-                if attr.combatType == US_TYPES.TRIGGER then
-                  if attr.triggerType == US_TRIGGERS.HIT then
-                    attr.execute(creature, attacker, value[2])
-                  end
-                else
-                  if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
-                    if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
-                      primaryDamage = math.floor(primaryDamage - (primaryDamage * value[2] / 100))
+        if item:getType():usesSlot(slot) then
+          local values = item:getBonusAttributes()
+          if values then
+            for key, value in pairs(values) do
+              local attr = US_ENCHANTMENTS[value[1]]
+              if attr then
+                if attr.combatType and attr.combatType ~= US_TYPES.CONDITION then
+                  if attr.combatType == US_TYPES.TRIGGER then
+                    if attr.triggerType == US_TRIGGERS.HIT then
+                      attr.execute(creature, attacker, value[2])
                     end
-                  end
-                  if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
-                    if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
-                      secondaryDamage = math.floor(secondaryDamage - (secondaryDamage * value[2] / 100))
+                  else
+                    if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
+                      if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
+                        primaryDamageTotal = primaryDamageTotal + value[2]
+                      end
+                    end
+                    if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
+                      if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
+                        secondaryDamageTotal = secondaryDamageTotal + value[2]
+                      end
                     end
                   end
                 end
@@ -738,8 +807,13 @@ function us_onHealthChange(creature, attacker, primaryDamage, primaryType, secon
         end
       end
     end
+    if primaryDamageTotal > 0 then
+      primaryDamage = math.floor(primaryDamage - (primaryDamage * primaryDamageTotal / 100))
+    end
+    if secondaryDamageTotal > 0 then
+      secondaryDamage = math.floor(secondaryDamage - (secondaryDamage * secondaryDamageTotal / 100))
+    end
   end
-
   return primaryDamage, primaryType, secondaryDamage, secondaryType
 end
 
@@ -771,8 +845,6 @@ function us_onKill(player, target, lastHit)
       local values = item:getBonusAttributes()
       if values then
         for key, value in pairs(values) do
-          value[1] = value[1]
-          value[2] = value[2]
           local attr = US_ENCHANTMENTS[value[1]]
           if attr then
             if attr.triggerType == US_TRIGGERS.KILL then
@@ -793,8 +865,6 @@ function us_onPrepareDeath(creature, killer)
         local values = item:getBonusAttributes()
         if values then
           for key, value in pairs(values) do
-            value[1] = value[1]
-            value[2] = value[2]
             local attr = US_ENCHANTMENTS[value[1]]
             if attr then
               if attr.name == "Revive on death" then
@@ -822,8 +892,6 @@ function us_onGainExperience(player, source, exp, rawExp)
       local values = item:getBonusAttributes()
       if values then
         for key, value in pairs(values) do
-          value[1] = value[1]
-          value[2] = value[2]
           local attr = US_ENCHANTMENTS[value[1]]
           if attr then
             if attr.name == "Experience" then
@@ -847,8 +915,6 @@ function us_CheckCorpse(monsterType, corpsePosition, killerId)
         local values = item:getBonusAttributes()
         if values then
           for key, value in pairs(values) do
-            value[1] = value[1]
-            value[2] = value[2]
             local attr = US_ENCHANTMENTS[value[1]]
             if attr then
               if attr.name == "Additonal Gold" then
@@ -1520,4 +1586,22 @@ function MonsterType.calculateItemLevel(self)
   local monsterValue = self:getMaxHealth() + self:getExperience()
   level = math.ceil(math.pow(monsterValue, 0.478))
   return math.max(1, level)
+end
+
+function Player.getNextSubId(self, itemSlot, attrSlot)
+  local cid = self:getId()
+  if not US_SUBID[cid] then
+    US_SUBID[cid] = {}
+  end
+
+  local subId = US_SUBID[cid]
+  subId.current = subId.current + 1
+
+  if not subId[itemSlot] then
+    subId[itemSlot] = {}
+  end
+
+  subId[itemSlot][attrSlot] = subId.current
+
+  return subId.current
 end
