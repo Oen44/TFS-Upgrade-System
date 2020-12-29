@@ -1,22 +1,13 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.6"
+local UPGRADE_SYSTEM_VERSION = "2.4.7"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
 US_BUFFS = {}
 
 local US_SUBID = {}
---[[
-  [cid] = {
-    subid = n+1,
-    items = {
-      [itemSlot] = {
-        attrSlot, attrSlot, attrSlot, attrSlot
-      }
-    }
-  }
-]]
+
 function us_onUse(player, item, fromPosition, target, toPosition, isHotkey)
   if not target or not target:isItem() or not target:getType():isUpgradable() then
     return false
@@ -1591,7 +1582,7 @@ end
 function Player.getNextSubId(self, itemSlot, attrSlot)
   local cid = self:getId()
   if not US_SUBID[cid] then
-    US_SUBID[cid] = {}
+    US_SUBID[cid] = {current = 0}
   end
 
   local subId = US_SUBID[cid]
