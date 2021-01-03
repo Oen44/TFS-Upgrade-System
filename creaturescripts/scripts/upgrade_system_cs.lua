@@ -7,8 +7,8 @@ function onHealthChange(creature, attacker, primaryDamage, primaryType, secondar
   return us_onHealthChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
 end
 
-function onManaChange(creature, attacker, manaChange, origin)
-  return us_onManaChange(creature, attacker, manaChange, origin)
+function onManaChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
+  return us_onManaChange(creature, attacker, primaryDamage, primaryType, secondaryDamage, secondaryType, origin)
 end
 
 function onDeath(creature, corpse, lasthitkiller, mostdamagekiller, lasthitunjustified, mostdamageunjustified)
