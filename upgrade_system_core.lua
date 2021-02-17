@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.8"
+local UPGRADE_SYSTEM_VERSION = "2.4.9"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -1295,16 +1295,16 @@ function Item.setItemLevel(self, level, first)
   end
   if first then
     if itemType:getAttack() > 0 then
-      level = level + US_CONFIG.ITEM_LEVEL_PER_ATTACK
+      level = level + math.floor(itemType:getAttack() / US_CONFIG.ITEM_LEVEL_PER_ATTACK)
     end
     if itemType:getDefense() > 0 then
-      level = level + US_CONFIG.ITEM_LEVEL_PER_DEFENSE
+      level = level + math.floor(itemType:getDefense() / US_CONFIG.ITEM_LEVEL_PER_DEFENSE)
     end
     if itemType:getArmor() > 0 then
-      level = level + US_CONFIG.ITEM_LEVEL_PER_ARMOR
+      level = level + math.floor(itemType:getArmor() / US_CONFIG.ITEM_LEVEL_PER_ARMOR)
     end
     if itemType:getHitChance() > 0 then
-      level = level + US_CONFIG.ITEM_LEVEL_PER_HITCHANCE
+      level = level + math.floor(itemType:getHitChance() / US_CONFIG.ITEM_LEVEL_PER_HITCHANCE)
     end
   end
   return self:setCustomAttribute("item_level", level)
