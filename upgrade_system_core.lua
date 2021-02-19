@@ -1,6 +1,6 @@
 dofile("data/upgrade_system_const.lua")
 
-local UPGRADE_SYSTEM_VERSION = "2.4.9"
+local UPGRADE_SYSTEM_VERSION = "2.4.10"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -700,14 +700,16 @@ function us_onDamaged(creature, attacker, primaryDamage, primaryType, secondaryD
                   elseif attr.name == "Double Damage" then
                     doubleDamageTotal = doubleDamageTotal + value[2]
                   else
-                    if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
-                      if attr.combatType == US_TYPES.OFFENSIVE then
-                        primaryDamageTotal = primaryDamageTotal + value[2]
+                    if attr.combatDamage then
+                      if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
+                        if attr.combatType == US_TYPES.OFFENSIVE then
+                          primaryDamageTotal = primaryDamageTotal + value[2]
+                        end
                       end
-                    end
-                    if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
-                      if attr.combatType == US_TYPES.OFFENSIVE then
-                        secondaryDamageTotal = secondaryDamageTotal + value[2]
+                      if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
+                        if attr.combatType == US_TYPES.OFFENSIVE then
+                          secondaryDamageTotal = secondaryDamageTotal + value[2]
+                        end
                       end
                     end
 
@@ -780,14 +782,16 @@ function us_onDamaged(creature, attacker, primaryDamage, primaryType, secondaryD
                       attr.execute(creature, attacker, value[2])
                     end
                   else
-                    if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
-                      if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
-                        primaryDamageTotal = primaryDamageTotal + value[2]
+                    if attr.combatDamage then
+                      if (attr.combatDamage % (primaryType + primaryType) >= primaryType) == true then
+                        if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
+                          primaryDamageTotal = primaryDamageTotal + value[2]
+                        end
                       end
-                    end
-                    if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
-                      if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
-                        secondaryDamageTotal = secondaryDamageTotal + value[2]
+                      if (attr.combatDamage % (secondaryType + secondaryType) >= secondaryType) == true then
+                        if attr.combatType == US_TYPES.DEFENSIVE and creature:isPlayer() then
+                          secondaryDamageTotal = secondaryDamageTotal + value[2]
+                        end
                       end
                     end
                   end

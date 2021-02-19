@@ -278,9 +278,6 @@ US_ENCHANTMENTS = {
   [12] = {
     name = "Life Steal",
     combatType = US_TYPES.OFFENSIVE,
-    combatDamage = COMBAT_PHYSICALDAMAGE + COMBAT_ENERGYDAMAGE + COMBAT_EARTHDAMAGE + COMBAT_FIREDAMAGE + COMBAT_ICEDAMAGE +
-      COMBAT_HOLYDAMAGE +
-      COMBAT_DEATHDAMAGE,
     VALUES_PER_LEVEL = 0.1,
     format = function(value)
       return "Heal for " .. value .. "%% of dealt damage"
@@ -705,7 +702,6 @@ US_ENCHANTMENTS = {
   [45] = {
     name = "Mana Steal",
     combatType = US_TYPES.OFFENSIVE,
-    combatDamage = COMBAT_ENERGYDAMAGE + COMBAT_EARTHDAMAGE + COMBAT_FIREDAMAGE + COMBAT_ICEDAMAGE + COMBAT_HOLYDAMAGE + COMBAT_DEATHDAMAGE,
     VALUES_PER_LEVEL = 0.1,
     format = function(value)
       return "Regenerate Mana for " .. value .. "%% of dealt damage"
