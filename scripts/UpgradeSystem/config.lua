@@ -12,6 +12,7 @@ LEGENDARY = 4
 
 US_CONFIG = {
   {
+    -- crystals here can be extracted using Crystal Extractor
     [ITEM_UPGRADE_CRYSTAL] = 26383, -- Upgrade Crystal item id
     [ITEM_ENCHANT_CRYSTAL] = 26384, -- Enchantment Crystal item id
     [ITEM_ALTER_CRYSTAL] = 26385, -- Alteration Crystal item id
