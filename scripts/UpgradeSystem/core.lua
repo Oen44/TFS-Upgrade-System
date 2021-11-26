@@ -1,4 +1,4 @@
-local UPGRADE_SYSTEM_VERSION = "3.0.0"
+local UPGRADE_SYSTEM_VERSION = "3.0.1"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -104,7 +104,7 @@ function us_onEquip(cid, iuid, slot)
     end
 end
 
-MoveItemEvent.onMoveItem = function(player, item, fromPosition, toPosition)
+MoveItemEvent.onMoveItem = function(player, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
     if not item:getType():isUpgradable() and not item:getType():canHaveItemLevel() or toPosition.y == CONST_SLOT_AMMO then
         return true
     end
