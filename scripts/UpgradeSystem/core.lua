@@ -1,4 +1,4 @@
-local UPGRADE_SYSTEM_VERSION = "3.0.2"
+local UPGRADE_SYSTEM_VERSION = "3.0.3"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -856,7 +856,7 @@ LookEvent.onLook = function(player, thing, position, distance, description)
     end
     return description
 end
-LookEvent:register()
+LookEvent:register(10)
 
 function Item.rollAttribute(self, player, itemType, weaponType, unidentify)
     if not itemType:isUpgradable() or self:isUnique() then
