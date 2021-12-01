@@ -1,4 +1,4 @@
-local UPGRADE_SYSTEM_VERSION = "3.0.1"
+local UPGRADE_SYSTEM_VERSION = "3.0.2"
 print(">> Loaded Upgrade System v" .. UPGRADE_SYSTEM_VERSION)
 
 US_CONDITIONS = {}
@@ -6,17 +6,13 @@ US_BUFFS = {}
 
 local US_SUBID = {}
 
-local LookEvent = EventCallback
-local MoveItemEvent = EventCallback
-local ItemMovedEvent = EventCallback
-local GainExperienceEvent = EventCallback
 local TargetCombatEvent = EventCallback
-
 TargetCombatEvent.onTargetCombat = function(creature, target)
     target:registerEvent("UpgradeSystemHealth")
     target:registerEvent("UpgradeSystemDeath")
     return RETURNVALUE_NOERROR
 end
+TargetCombatEvent:register()
 
 local LoginEvent = CreatureEvent("UpgradeSystemLogin")
 
@@ -104,6 +100,7 @@ function us_onEquip(cid, iuid, slot)
     end
 end
 
+local MoveItemEvent = EventCallback
 MoveItemEvent.onMoveItem = function(player, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
     if not item:getType():isUpgradable() and not item:getType():canHaveItemLevel() or toPosition.y == CONST_SLOT_AMMO then
         return true
@@ -173,7 +170,9 @@ MoveItemEvent.onMoveItem = function(player, item, count, fromPosition, toPositio
 
     return true
 end
+MoveItemEvent:register()
 
+local ItemMovedEvent = EventCallback
 ItemMovedEvent.onItemMoved = function(player, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
     if not item:getType():isUpgradable() then
         return
@@ -214,6 +213,7 @@ ItemMovedEvent.onItemMoved = function(player, item, count, fromPosition, toPosit
         end
     end
 end
+ItemMovedEvent:register()
 
 function us_onLogin(player)
     player:registerEvent("UpgradeSystemKill")
@@ -629,6 +629,7 @@ function PrepareDeathEvent.onPrepareDeath(creature, killer)
     return true
 end
 
+local GainExperienceEvent = EventCallback
 GainExperienceEvent.onGainExperience = function(player, source, exp, rawExp)
     for slot = CONST_SLOT_HEAD, CONST_SLOT_AMMO do
         local item = player:getSlotItem(slot)
@@ -648,6 +649,7 @@ GainExperienceEvent.onGainExperience = function(player, source, exp, rawExp)
     end
     return exp
 end
+GainExperienceEvent:register()
 
 function us_CheckCorpse(monsterType, corpsePosition, killerId)
     local killer = Player(killerId)
@@ -752,6 +754,7 @@ function us_RemoveBuff(pid, buffId, buffName)
     end
 end
 
+local LookEvent = EventCallback
 LookEvent.onLook = function(player, thing, position, distance, description)
     if thing:isItem() and thing.itemid == US_CONFIG.ITEM_MIND_CRYSTAL and thing:hasMemory() then
         for i = 4, 1, -1 do
@@ -853,6 +856,7 @@ LookEvent.onLook = function(player, thing, position, distance, description)
     end
     return description
 end
+LookEvent:register()
 
 function Item.rollAttribute(self, player, itemType, weaponType, unidentify)
     if not itemType:isUpgradable() or self:isUnique() then
@@ -1361,15 +1365,8 @@ function Player.getNextSubId(self, itemSlot, attrSlot)
     return subId.current
 end
 
-LookEvent:register()
-MoveItemEvent:register()
-ItemMovedEvent:register()
-GainExperienceEvent:register()
-TargetCombatEvent:register()
-
 LoginEvent:type("login")
 LoginEvent:register()
-
 HealthChangeEvent:type("healthchange")
 HealthChangeEvent:register()
 ManaChangeEvent:type("manachange")
